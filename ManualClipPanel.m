@@ -86,7 +86,7 @@ function ManualClipPanel()
 								  'Units', 'normalized', ...
 								  'FontSize', 10, ...
 								  'Position', [0.872, 0.63-(n-1)*0.023 0.026 0.02], ...
-								  'String', '20000', ...
+								  'String', '0', ...
 								  'CallBack', {@Edit_CallBack,n,'L'}, ...
 								  'Enable', 'off');
 		hButton_LeftPlus(n) = uicontrol('Parent', hFigureBase, ...
@@ -97,6 +97,7 @@ function ManualClipPanel()
 										'String', '+', ...
 										'CallBack', {@Button_Plus_CallBack,n,'L'}, ...
 										'Enable', 'off');
+        % Right
 		hButton_RightMinus(n) = uicontrol('Parent', hFigureBase, ...
 										'Style', 'pushbutton', ...
 										'Units', 'normalized', ...
@@ -110,7 +111,7 @@ function ManualClipPanel()
 								   'Units', 'normalized', ...
 								   'FontSize', 10, ...
 								   'Position', [0.942 0.63-(n-1)*0.023 0.026 0.02 ], ...
-								   'String', '30000', ...
+								   'String', '0', ...
 								   'CallBack', {@Edit_CallBack,n,'R'}, ...
 								   'Enable', 'off');
 		hButton_RightPlus(n) = uicontrol('Parent', hFigureBase, ...
@@ -123,6 +124,7 @@ function ManualClipPanel()
 										'Enable', 'off');
     end
 
+    % Save As ...
     hText_SaveAs = uicontrol('Parent', hFigureBase, ...
                                      'Style', 'Text', ...
                                      'Units', 'normalized', ...
@@ -167,6 +169,15 @@ function ManualClipPanel()
     
     % Clipping lines
     handles.hButton_AddClipped = hButton_AddClipped;
+    handles.ClipParts_Number = 0;
+    % Left
+    handles.hButton_LeftMinus = hButton_LeftMinus;
+    handles.hEdit_Left = hEdit_Left;
+    handles.hButton_LeftPlus = hButton_LeftPlus;
+    % Right
+    handles.hButton_RightMinus = hButton_RightMinus;
+    handles.hEdit_Right = hEdit_Right;
+    handles.hButton_RightPlus = hButton_RightPlus;
     
     % Save As
     handles.hText_SaveAs = hText_SaveAs;
@@ -211,7 +222,7 @@ function Button_AddFile_CallBack(source, eventdata)
             set(hAxes_EMG(ch), 'Color', [0.15 0.15 0.15]);
             hPlots_EMG(ch) = plot(hAxes_EMG(ch), 0, '-y', ...
                                  'LineWidth',1);
-            plot(t, rawdata(:,2*ch));
+            plot(rawdata(:,2*ch));
         end
     else
         disp('n/2 x 1 column in the PanelLeft.');
@@ -223,7 +234,7 @@ function Button_AddFile_CallBack(source, eventdata)
         for ch=1:ceil(Channel_Counts/2)
             hAxes_EMG(ch) = axes('Parent', handles.hPanelLeft, ...
                                  'Units', 'normalized', ...
-                                 'Position', [0.035 0.99-H*ch, 0.94, H*.9], ...
+                                 'Position', [0.035 0.99-H*ch, 0.90, H*.9], ...
                                  'YGrid', 'on', ...
                                  'XGrid', 'on', ...
                                  'YLimMode', 'manual');
@@ -231,13 +242,13 @@ function Button_AddFile_CallBack(source, eventdata)
             %set(hAxes_EMG(ch), 'YLim', [-0.005 0.005]);
             hPlots_EMG(ch) = plot(hAxes_EMG(ch), 0, '-y', ...
                                  'LineWidth',1);
-            plot(t, rawdata(:,2*ch));
+            plot(rawdata(:,2*ch));
         end
         %Right half axes
         for ch=ceil(Channel_Counts/2)+1:Channel_Counts
             hAxes_EMG(ch) = axes('Parent', handles.hPanelRight, ...
                                  'Units', 'normalized', ...
-                                 'Position', [0.035 0.99-H*(ch-ceil(Channel_Counts/2)), 0.94, H*.9], ...
+                                 'Position', [0.035 0.99-H*(ch-ceil(Channel_Counts/2)), 0.90, H*.9], ...
                                  'YGrid', 'on', ...
                                  'XGrid', 'on', ...
                                  'YLimMode', 'manual');
@@ -245,7 +256,7 @@ function Button_AddFile_CallBack(source, eventdata)
             %set(hAxes_EMG(ch), 'YLim', [-0.005 0.005]);
             hPlots_EMG(ch) = plot(hAxes_EMG(ch), 0, '-y', ...
                                  'LineWidth',1);
-            plot(t, rawdata(:,2*ch));
+            plot(rawdata(:,2*ch));
         end      
     end
     
@@ -258,29 +269,21 @@ function Button_AddFile_CallBack(source, eventdata)
     
 function Button_AddClipped_CallBack(source, eventdata)
     handles = guidata(source);
-	%--Update Add_Number
-	handles.Add_Number = handles.Add_Number + 1;
+	%--Update ClipParts_Number
+	handles.ClipParts_Number = handles.ClipParts_Number + 1;
 	%--Visible 
 	%-the Number_th Clipped left line 
 	%-the Edit box.
 	%-the Clipped right line.
 	%-Left
-	set(handles.hButton_LeftMinus(handles.Add_Number), 'Visible', 'on');
-	set(handles.hEdit_Left(handles.Add_Number), 'Visible', 'on');
-	set(handles.hButton_LeftPlus(MP_handles.Add_Number), 'Visible', 'on');
+	set(handles.hButton_LeftMinus(handles.ClipParts_Number), 'Enable', 'on');
+	set(handles.hEdit_Left(handles.ClipParts_Number), 'Enable', 'on');
+	set(handles.hButton_LeftPlus(handles.ClipParts_Number), 'Enable', 'on');
 	%-Right
-	set(handles.hButton_RightMinus(handles.Add_Number), 'Visible', 'on');
-	set(handles.hEdit_Right(handles.Add_Number), 'Visible', 'on');
-	set(handles.hButton_RightPlus(handles.Add_Number), 'Visible', 'on');
+	set(handles.hButton_RightMinus(handles.ClipParts_Number), 'Enable', 'on');
+	set(handles.hEdit_Right(handles.ClipParts_Number), 'Enable', 'on');
+	set(handles.hButton_RightPlus(handles.ClipParts_Number), 'Enable', 'on');
 
-	%--Initiate the Position of Clipped Line.
-	% XLim = MP_handles.Rawdata_Size(1);
-	XLim = get(handles.hAxes_EMG(1), 'XLim');
-	XLim = XLim(2);
-	ClippedLine_Position = [XLim/handles.Total_Clipped*handles.Add_Number-2000, ...
-							XLim/handles.Total_Clipped*handles.Add_Number+2000];
-	set(handles.hEdit_Left(handles.Add_Number), 'String', num2str(ClippedLine_Position(1)));
-	set(handles.hEdit_Right(handles.Add_Number), 'String', num2str(ClippedLine_Position(2)));
 
 	%--Clipped line initiation.
 	global Clipped_Line;
