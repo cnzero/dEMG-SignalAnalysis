@@ -190,16 +190,13 @@ function Button_AddFile_CallBack(source, eventdata)
     set(handles.hEdit_FileName, 'String', FileName);
     %how many axes are needed for selected Rawdata file;
     rawdata = csvread([PathName, FileName], 1, 0);
+    t = rawdata(:,1);
     %[t, ch1, t, ch2, t, ch3, t, ch4, ...]710000x12
     Channel_Counts = ceil(size(rawdata,2)/2);
-    
     % -------- Layout plan for rawdata displaying...
     % 1,2,3,4Channel ---> nx1-column axes in PanelWhole
-
     % 5,6,7,8..-Channel --->half axes in PanelLeft
     %                       half axes in PanelRight
-    
-    Channel_Counts = 10;
     if Channel_Counts <= 4
         disp('n x 1 column in the PanelWhole');
         set(handles.hPanelWhole, 'Visible', 'on');
@@ -214,7 +211,7 @@ function Button_AddFile_CallBack(source, eventdata)
             set(hAxes_EMG(ch), 'Color', [0.15 0.15 0.15]);
             hPlots_EMG(ch) = plot(hAxes_EMG(ch), 0, '-y', ...
                                  'LineWidth',1);
-%             title(['Channel', num2str(ch)]);
+            plot(t, rawdata(:,2*ch));
         end
     else
         disp('n/2 x 1 column in the PanelLeft.');
@@ -234,6 +231,7 @@ function Button_AddFile_CallBack(source, eventdata)
             %set(hAxes_EMG(ch), 'YLim', [-0.005 0.005]);
             hPlots_EMG(ch) = plot(hAxes_EMG(ch), 0, '-y', ...
                                  'LineWidth',1);
+            plot(t, rawdata(:,2*ch));
         end
         %Right half axes
         for ch=ceil(Channel_Counts/2)+1:Channel_Counts
@@ -247,52 +245,57 @@ function Button_AddFile_CallBack(source, eventdata)
             %set(hAxes_EMG(ch), 'YLim', [-0.005 0.005]);
             hPlots_EMG(ch) = plot(hAxes_EMG(ch), 0, '-y', ...
                                  'LineWidth',1);
+            plot(t, rawdata(:,2*ch));
         end      
     end
+    
     
     % Update handles
     handles.hAxes_EMG = hAxes_EMG;
     handles.hPlots_EMG = hPlots_EMG;
+    handles.rawdata = rawdata;
+    guidata(handles.hFigureBase, handles);
+    
 function Button_AddClipped_CallBack(source, eventdata)
-	global MP_handles;
+    handles = guidata(source);
 	%--Update Add_Number
-	MP_handles.Add_Number = MP_handles.Add_Number + 1;
+	handles.Add_Number = handles.Add_Number + 1;
 	%--Visible 
 	%-the Number_th Clipped left line 
 	%-the Edit box.
 	%-the Clipped right line.
 	%-Left
-	set(MP_handles.hButton_LeftMinus(MP_handles.Add_Number), 'Visible', 'on');
-	set(MP_handles.hEdit_Left(MP_handles.Add_Number), 'Visible', 'on');
-	set(MP_handles.hButton_LeftPlus(MP_handles.Add_Number), 'Visible', 'on');
+	set(handles.hButton_LeftMinus(handles.Add_Number), 'Visible', 'on');
+	set(handles.hEdit_Left(handles.Add_Number), 'Visible', 'on');
+	set(handles.hButton_LeftPlus(MP_handles.Add_Number), 'Visible', 'on');
 	%-Right
-	set(MP_handles.hButton_RightMinus(MP_handles.Add_Number), 'Visible', 'on');
-	set(MP_handles.hEdit_Right(MP_handles.Add_Number), 'Visible', 'on');
-	set(MP_handles.hButton_RightPlus(MP_handles.Add_Number), 'Visible', 'on');
+	set(handles.hButton_RightMinus(handles.Add_Number), 'Visible', 'on');
+	set(handles.hEdit_Right(handles.Add_Number), 'Visible', 'on');
+	set(handles.hButton_RightPlus(handles.Add_Number), 'Visible', 'on');
 
 	%--Initiate the Position of Clipped Line.
 	% XLim = MP_handles.Rawdata_Size(1);
-	XLim = get(MP_handles.hAxes_EMG(1), 'XLim');
+	XLim = get(handles.hAxes_EMG(1), 'XLim');
 	XLim = XLim(2);
-	ClippedLine_Position = [XLim/MP_handles.Total_Clipped*MP_handles.Add_Number-2000, ...
-							XLim/MP_handles.Total_Clipped*MP_handles.Add_Number+2000];
-	set(MP_handles.hEdit_Left(MP_handles.Add_Number), 'String', num2str(ClippedLine_Position(1)));
-	set(MP_handles.hEdit_Right(MP_handles.Add_Number), 'String', num2str(ClippedLine_Position(2)));
+	ClippedLine_Position = [XLim/handles.Total_Clipped*handles.Add_Number-2000, ...
+							XLim/handles.Total_Clipped*handles.Add_Number+2000];
+	set(handles.hEdit_Left(handles.Add_Number), 'String', num2str(ClippedLine_Position(1)));
+	set(handles.hEdit_Right(handles.Add_Number), 'String', num2str(ClippedLine_Position(2)));
 
 	%--Clipped line initiation.
 	global Clipped_Line;
 	Color_map = {'m','k','r','g','c'};
-	for ch=1:MP_handles.Channel_Counts
-		Clipped_Line(2*MP_handles.Add_Number-1,ch) = line([ClippedLine_Position(1),ClippedLine_Position(1)], ...
+	for ch=1:handles.Channel_Counts
+		Clipped_Line(2*handles.Add_Number-1,ch) = line([ClippedLine_Position(1),ClippedLine_Position(1)], ...
 														  [-0.0005 0.0005], ...
-														 'Color', Color_map{MP_handles.Add_Number}, ...
+														 'Color', Color_map{handles.Add_Number}, ...
 														 'LineWidth', 1, ...
-														 'Parent', MP_handles.hAxes_EMG(ch));
-		Clipped_Line(2*MP_handles.Add_Number,ch) = line([ClippedLine_Position(2),ClippedLine_Position(2)], ...
+														 'Parent', handles.hAxes_EMG(ch));
+		Clipped_Line(2*handles.Add_Number,ch) = line([ClippedLine_Position(2),ClippedLine_Position(2)], ...
 														 [-0.0005 0.0005], ...
-														 'Color', Color_map{MP_handles.Add_Number}, ...
+														 'Color', Color_map{handles.Add_Number}, ...
 														 'LineWidth', 1, ...
-														 'Parent', MP_handles.hAxes_EMG(ch));
+														 'Parent', handles.hAxes_EMG(ch));
 	end
 	
 function Button_Minus_CallBack(source, eventdata, number, Left_Right)
