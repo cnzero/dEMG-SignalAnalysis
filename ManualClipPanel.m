@@ -21,9 +21,13 @@ function ManualClipPanel()
                                'Style', 'edit', ...
                                'FontSize', 13, ...
                                'Units', 'normalized', ...
-                               'Position', [0.85 0.87 0.13 0.03]);
+                               'Position', [0.87 0.87 0.12 0.03]);
 
-    % Panel: Left-Right-Up-Down
+    % Panel: Whole-Left-Right-Up-Down
+    hPanelWhole = uipanel('Parent', hFigureBase, ...
+                          'Title', 'Whole', ...
+                          'Units', 'normalized', ...
+                          'Position', [0.01 0.01 0.85 0.98]);
 	hPanelLeft = uipanel('Parent', hFigureBase, ...
 						'Title', 'Left', ...
 						'Units', 'normalized', ...
@@ -133,10 +137,12 @@ function ManualClipPanel()
     handles.hFigureBase = hFigureBase;
     handles.hButton_AddFile = hButton_AddFile;
     handles.hEdit_FileName = hEdit_FileName;
-%     % Panel - Axes - Plot
-%     handles.hPanelLeft = hPanelLeft;
-%     handles.hAxes_EMG = hAxes_EMG;
-%     handles.hPlots_EMG = hPlots_EMG;
+    % Panel: Left-Right-Up-Down
+    handles.hPanelWhole = hPanelWhole;
+    handles.hPanelLeft = hPanelLeft;
+    handles.hPanelRight = hPanelRight;
+    handles.hPanelUp = hPanelUp;
+    handles.hPanelDown = hPanelDown;
     
     % Clipping lines
     handles.hButton_AddClipped = hButton_AddClipped;
@@ -160,9 +166,8 @@ function Button_AddFile_CallBack(source, eventdata)
     %how many axes are needed for selected Rawdata file;
     rawdata = csvread([PathName, FileName], 1, 0);
     %[t, ch1, t, ch2, t, ch3, t, ch4, ...]710000x12
-    nTotal_Channels = size(rawdata,2);
-    
-%     Channel_Counts = 8;
+    Channel_Counts = size(rawdata,2);
+
 % 	Channel_Values = [1 2 3 4 1 2 3 4];
 % 	hAxes_EMG = zeros(Channel_Counts,1);
 % 	hPlots_EMG =zeros(Channel_Counts,1);
