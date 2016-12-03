@@ -62,7 +62,7 @@ function ManualClipPanel()
 
     % Add Clipped Lines
     % As many as 8 parts are allowed to be clipped from the rawdata
-	Total_Clipped = 10;
+	Total_Clipped = 5;
 	%--Left
 	hButton_LeftMinus = zeros(Total_Clipped, 1);
 	hEdit_Left = zeros(Total_Clipped, 1);
@@ -170,6 +170,7 @@ function ManualClipPanel()
     % Clipping lines
     handles.hButton_AddClipped = hButton_AddClipped;
     handles.ClipParts_Number = 0;
+    handles.Total_Clipped = Total_Clipped;
     % Left
     handles.hButton_LeftMinus = hButton_LeftMinus;
     handles.hEdit_Left = hEdit_Left;
@@ -204,6 +205,7 @@ function Button_AddFile_CallBack(source, eventdata)
     t = rawdata(:,1);
     %[t, ch1, t, ch2, t, ch3, t, ch4, ...]710000x12
     Channel_Counts = ceil(size(rawdata,2)/2);
+    handles.Channel_Counts = Channel_Counts;
     % -------- Layout plan for rawdata displaying...
     % 1,2,3,4Channel ---> nx1-column axes in PanelWhole
     % 5,6,7,8..-Channel --->half axes in PanelLeft
@@ -286,17 +288,26 @@ function Button_AddClipped_CallBack(source, eventdata)
 
 
 	%--Clipped line initiation.
+    XLim = get(handles.hAxes_EMG(1), 'XLim');
+	XLim = XLim(2);
+    % Total_Clipped = 5;
+    % ClippedLine_Position: [0.1 0.2] [0.3 0.4], [0.5 0.6], 
+    %                       [0.6 0.7], [0.7 0.8]
+	ClippedLine_Position = [XLim/handles.Total_Clipped/2*handles.ClipParts_Number, ...
+							XLim/handles.Total_Clipped/2*(handles.ClipParts_Number+1)];
+	set(handles.hEdit_Left(handles.ClipParts_Number), 'String', num2str(ClippedLine_Position(1)));
+	set(handles.hEdit_Right(handles.ClipParts_Number), 'String', num2str(ClippedLine_Position(2)));
 	global Clipped_Line;
 	Color_map = {'m','k','r','g','c'};
 	for ch=1:handles.Channel_Counts
-		Clipped_Line(2*handles.Add_Number-1,ch) = line([ClippedLine_Position(1),ClippedLine_Position(1)], ...
+		Clipped_Line(2*handles.ClipParts_Number-1,ch) = line([ClippedLine_Position(1),ClippedLine_Position(1)], ...
 														  [-0.0005 0.0005], ...
-														 'Color', Color_map{handles.Add_Number}, ...
+														 'Color', Color_map{handles.ClipParts_Number}, ...
 														 'LineWidth', 1, ...
 														 'Parent', handles.hAxes_EMG(ch));
-		Clipped_Line(2*handles.Add_Number,ch) = line([ClippedLine_Position(2),ClippedLine_Position(2)], ...
+		Clipped_Line(2*handles.ClipParts_Number,ch) = line([ClippedLine_Position(2),ClippedLine_Position(2)], ...
 														 [-0.0005 0.0005], ...
-														 'Color', Color_map{handles.Add_Number}, ...
+														 'Color', Color_map{handles.ClipParts_Number}, ...
 														 'LineWidth', 1, ...
 														 'Parent', handles.hAxes_EMG(ch));
 	end
@@ -488,14 +499,4 @@ function Button_Truncate_CallBack(source, eventdata)
 	Data = MP_handles.Data;
 	save([MP_handles.PatientName, '.mat'], ...
 		 'Data');
-	
-	%--Comparison and Checking.
-	% figure(2)
-	% for ch=1:4
-	% 	%-Left Disease.
-	% 	subplot(4,2,2*ch-1);
-	% 	plot(MP_handles.Data{MP_handles.Times_Value, MP_handles.BA_Value, 2, MP_handles.Movement_Value, ch});
-	% 	%-Right Healthy.
-	% 	subplot(4,2,2*ch);
-	% 	plot(MP_handles.Data{MP_handles.Times_Value, MP_handles.BA_Value, 1, MP_handles.Movement_Value, ch});
-	% end
+
